@@ -28,7 +28,7 @@ def main():
     perfil_escolhido = PERFIS_USUARIO['Performance']
     ranking = calculate_recommendations(matriz_produtos, perfil_escolhido)
     
-    print("\n=== Ranking de Produtos Recomendados ===")
+    print("\n=== Ranking de Produtos Recomendados ====")
     print(ranking)
 
 if __name__ == "__main__":
