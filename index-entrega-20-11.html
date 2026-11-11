@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0f1f">
+<meta name="description" content="Multidimensional Ecom AI: projeto de análise de avaliações da Amazon e do Mercado Livre, com cronograma de entrega em 20/11/2026 e análise por aspecto (preço, desempenho, bateria e design) para entender por que uma compra foi boa ou ruim.">
+<title>Multidimensional Ecom AI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='14' height='14' x='2' y='2' rx='3' fill='%237ea6ff'/%3E%3Crect width='14' height='14' x='18' y='2' rx='3' fill='%234fe0b5'/%3E%3Crect width='14' height='14' x='2' y='18' rx='3' fill='%23ffc857'/%3E%3Crect width='14' height='14' x='18' y='18' rx='3' fill='%23ff7a90'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+:root{
+  --ink:#0a0f1f; --ink-2:#111a33; --ink-3:#18233f; --line:rgba(160,180,255,.16);
+  --text:#e8ecfa; --muted:#a2acce; --brand:#7ea6ff;
+  --pos:#4fe0b5; --neg:#ff7a90; --mix:#ffc857; --neu:#8fa0cf;
+  --f-ui:'Bricolage Grotesque',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-read:'Newsreader',Georgia,'Times New Roman',serif;
+  --f-code:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --maxw:1160px;
+}
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
+body{background:var(--ink);color:var(--text);font:400 16px/1.55 var(--f-ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+p{font-family:var(--f-read);font-size:1.1875rem;line-height:1.6;color:var(--muted);max-width:62ch}
+a{color:inherit}
+ul,ol{list-style:none;padding:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+code,pre{font-family:var(--f-code)}
+:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:12px;top:-60px;background:var(--brand);color:#06122e;padding:10px 14px;border-radius:8px;z-index:100;font-weight:600}
+.skip:focus{top:12px}
+.wrap{width:min(var(--maxw),100% - 32px);margin-inline:auto}
+
+/* barra de leitura */
+.progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:60;background:transparent}
+.progress i{display:block;height:100%;width:100%;background:var(--brand);transform-origin:0 50%;transform:scaleX(0)}
+
+/* topo */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,15,31,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
+.brand-mark{display:grid;grid-template-columns:repeat(2,9px);gap:3px}
+.brand-mark i{width:9px;height:9px;border-radius:2.5px}
+.brand-mark i:nth-child(1){background:var(--brand)}.brand-mark i:nth-child(2){background:var(--pos)}
+.brand-mark i:nth-child(3){background:var(--mix)}.brand-mark i:nth-child(4){background:var(--neg)}
+.brand small{font-weight:500;color:var(--muted)}
+.nav{display:flex;align-items:center;gap:6px}
+.nav a{text-decoration:none;color:var(--muted);padding:8px 12px;border-radius:999px;font-size:.95rem;transition:color .15s,background .15s}
+.nav a:hover{color:var(--text)}
+.nav a[aria-current=true]{color:var(--text);background:var(--ink-3)}
+.nav .nav-cta{color:#06122e;background:var(--brand);font-weight:600;margin-left:6px}
+.nav .nav-cta:hover{background:#9bbcff;color:#06122e}
+.menu-btn{display:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);align-items:center;justify-content:center;flex-direction:column;gap:5px}
+.menu-btn span{width:18px;height:2px;background:var(--text);border-radius:2px;transition:transform .2s}
+.menu-btn[aria-expanded=true] span:first-child{transform:translateY(3.5px) rotate(45deg)}
+.menu-btn[aria-expanded=true] span:last-child{transform:translateY(-3.5px) rotate(-45deg)}
+
+/* botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:999px;font-weight:600;text-decoration:none;transition:transform .15s,background .15s,border-color .15s}
+.btn-primary{background:var(--brand);color:#06122e}
+.btn-primary:hover{background:#9bbcff}
+.btn-ghost{border:1px solid var(--line);color:var(--text)}
+.btn-ghost:hover{border-color:var(--brand)}
+.btn:active{transform:translateY(1px)}
+
+/* seções */
+section{position:relative}
+.sec{padding:112px 0}
+.sec-head{display:grid;gap:14px;margin-bottom:48px;max-width:760px}
+.section-kicker{display:inline-flex;align-items:center;gap:9px;color:var(--pos);font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.section-kicker::before{content:"";width:22px;height:1px;background:currentColor}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;width:max-content;max-width:100%;padding:8px 13px;border:1px solid var(--line);border-radius:999px;color:var(--pos);font-size:.82rem;font-weight:600;letter-spacing:.025em;background:rgba(79,224,181,.06)}
+.eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--pos);box-shadow:0 0 0 5px rgba(79,224,181,.12)}
+.hero h1 em{font-family:var(--f-read);font-weight:500;color:var(--brand);letter-spacing:-.045em}
+.hero-copy{animation:rise .65s cubic-bezier(.2,.7,.2,1) both}
+.specimen{animation:rise .8s .08s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+h1,h2,h3{font-family:var(--f-ui);letter-spacing:-.022em;font-weight:700}
+h1{font-size:clamp(2.45rem,5.4vw,4.3rem);line-height:1.04;letter-spacing:-.03em}
+h2{font-size:clamp(1.85rem,3.4vw,2.7rem);line-height:1.1}
+h3{font-size:1.25rem;line-height:1.25}
+
+/* hero */
+.hero{padding:64px 0 96px}
+.hero::before{content:"";position:absolute;right:-12%;top:-10%;width:60vw;height:60vw;max-width:760px;max-height:760px;background:radial-gradient(closest-side,rgba(126,166,255,.14),transparent 70%);pointer-events:none}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:start;position:relative}
+.hero-copy{display:grid;gap:26px;padding-top:28px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px}
+.fineprint{font-family:var(--f-ui);font-size:.95rem;color:var(--muted);max-width:44ch}
+.fineprint b{color:var(--text);font-weight:600}
+
+.specimen{background:var(--ink-2);border:1px solid var(--line);border-radius:22px;padding:22px;display:grid;gap:20px;box-shadow:0 30px 80px -40px rgba(0,0,0,.7)}
+.spec-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.spec-title{font-weight:600;font-size:.95rem}
+.samples{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:7px 13px;border-radius:999px;border:1px solid var(--line);font-size:.88rem;color:var(--muted);transition:all .15s}
+.chip:hover{color:var(--text);border-color:var(--brand)}
+.chip[aria-pressed=true],.chip[aria-selected=true]{background:var(--brand);border-color:var(--brand);color:#06122e;font-weight:600}
+.review{font-family:var(--f-read);font-size:clamp(1.3rem,2.2vw,1.65rem);line-height:1.75;color:var(--text);min-height:7.5em;padding:6px 2px;font-weight:400}
+.mk{--c:var(--neu);--cb:rgba(143,160,207,.18);position:relative;padding:.04em .22em;border-radius:5px;-webkit-box-decoration-break:clone;box-decoration-break:clone;
+  background-image:linear-gradient(var(--c),var(--c)),linear-gradient(var(--cb),var(--cb));background-repeat:no-repeat;background-position:0 100%,0 0;background-size:100% 2px,100% 100%}
+.mk[data-s=pos]{--c:var(--pos);--cb:rgba(79,224,181,.17)}
+.mk[data-s=neg]{--c:var(--neg);--cb:rgba(255,122,144,.17)}
+.mk[data-s=mix]{--c:var(--mix);--cb:rgba(255,200,87,.17)}
+.mk sup{font:600 .56em/1 var(--f-ui);color:var(--c);margin-left:.35em;letter-spacing:.01em;vertical-align:.7em}
+.review.run .mk{animation:sweep .7s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i)*.28s + .1s)}
+@keyframes sweep{from{background-size:0 2px,0 100%}to{background-size:100% 2px,100% 100%}}
+.aspects{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.asp{--c:var(--neu);padding:12px 12px 14px;border-radius:14px;background:var(--ink-3);border-top:3px solid var(--c);display:grid;gap:4px;min-height:96px;align-content:start}
+.asp[data-s=pos]{--c:var(--pos)}.asp[data-s=neg]{--c:var(--neg)}.asp[data-s=mix]{--c:var(--mix)}
+.asp[data-s=none]{--c:transparent;opacity:.6}
+.asp b{font-size:.95rem}
+.asp strong{font-size:.85rem;font-weight:600;color:var(--c)}
+.asp[data-s=none] strong{color:var(--muted)}
+.asp small{font-size:.8rem;color:var(--muted);line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.reading{font-family:var(--f-ui);font-size:1rem;color:var(--text);max-width:none;min-height:2.9em}
+.edit{display:grid;gap:8px}
+.edit label{font-size:.9rem;color:var(--muted)}
+textarea{width:100%;min-height:92px;resize:vertical;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font:400 1rem/1.5 var(--f-read);font-size:1.05rem}
+textarea:focus-visible{outline-offset:1px}
+.note{font-family:var(--f-ui);font-size:.85rem;color:var(--muted);max-width:none}
+
+/* pipeline */
+.flow{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:40px;align-items:start}
+.steps{display:grid;gap:6px;position:relative}
+.steps::before{content:"";position:absolute;left:25px;top:30px;bottom:30px;width:2px;background:var(--line)}
+.steps .fill{position:absolute;left:25px;top:30px;width:2px;height:calc((100% - 60px)*var(--p,0));background:var(--brand);transition:height .35s}
+.step{position:relative;display:grid;grid-template-columns:52px 1fr;gap:6px;text-align:left;padding:12px 14px 12px 0;border-radius:16px;align-items:center;transition:background .15s}
+.step:hover{background:rgba(126,166,255,.07)}
+.step .dot{position:relative;z-index:1;justify-self:center;width:36px;height:36px;border-radius:50%;background:var(--ink);border:2px solid var(--line);display:grid;place-items:center;font-size:.78rem;font-weight:700;color:var(--muted);transition:all .2s}
+.step[aria-selected=true] .dot{background:var(--brand);border-color:var(--brand);color:#06122e}
+.step.past .dot{border-color:var(--brand);color:var(--brand)}
+.step b{display:block;font-size:1.05rem}
+.step span.sub{display:block;font-size:.9rem;color:var(--muted);line-height:1.35}
+.step-panel{background:var(--ink-2);border:1px solid var(--line);border-radius:22px;padding:30px;display:grid;gap:22px}
+.step-panel h3{font-size:1.6rem}
+.step-panel .lead-p{color:var(--text)}
+.facts{display:grid;gap:0}
+.fact{display:grid;grid-template-columns:130px 1fr;gap:18px;padding:16px 0;border-top:1px solid var(--line)}
+.fact dt{font-weight:600;color:var(--brand);font-size:.95rem}
+.fact dd{font-family:var(--f-read);font-size:1.1rem;line-height:1.55;color:var(--text)}
+.fact dd code{font-size:.85em;background:var(--ink-3);padding:2px 7px;border-radius:6px}
+.tracks{margin-top:34px;padding:20px 22px;border-left:3px solid var(--brand);background:rgba(126,166,255,.07);border-radius:0 14px 14px 0;max-width:820px}
+.tracks p{color:var(--text);font-size:1.1rem}
+.swap{animation:swap .35s ease both}
+@keyframes swap{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* andamento */
+.prog-layout{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:48px;align-items:start}
+.summary{position:sticky;top:96px;display:grid;gap:22px}
+.summary-label{display:grid;gap:5px}.summary-note{font-size:.9rem;color:var(--muted)}
+.ring{display:flex;align-items:center;gap:20px}
+.ring svg{width:116px;height:116px;flex:none;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .bg{stroke:var(--ink-3)}
+.ring .fg{stroke:var(--brand);stroke-linecap:round;transition:stroke-dasharray 1.1s cubic-bezier(.2,.7,.2,1)}
+.ring .big{font-size:2.6rem;font-weight:700;letter-spacing:-.03em;line-height:1}
+.ring .big small{font-size:1.2rem}
+.ring p{font-family:var(--f-ui);font-size:.95rem;margin-top:6px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.timeline-wrap{min-width:0}
+.timeline-caption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px 46px;color:var(--muted);font-size:.76rem;letter-spacing:.08em}
+.timeline-caption span:first-child{color:var(--brand);font-weight:700}
+.timeline{display:grid;gap:12px;position:relative}
+.timeline::before{content:"";position:absolute;left:13px;top:20px;bottom:24px;width:1px;background:linear-gradient(var(--pos),var(--brand),var(--line))}
+.timeline .item{position:relative}
+.timeline .item details.card{transition:transform .18s,border-color .18s,box-shadow .18s}
+.timeline .item details.card:hover{transform:translateY(-2px);border-color:rgba(126,166,255,.38);box-shadow:0 14px 36px -28px rgba(126,166,255,.55)}
+.timeline .period{margin-left:auto;color:var(--brand);font:600 .78rem var(--f-code);white-space:nowrap}
+.timeline .body .next-action{margin-top:10px;padding:10px 12px;border-left:2px solid var(--pos);border-radius:0 9px 9px 0;background:rgba(79,224,181,.06);font-family:var(--f-ui);font-size:.9rem;color:var(--text)}
+.item{display:grid;grid-template-columns:32px 1fr;gap:14px}
+.item[hidden]{display:none}
+.node{width:28px;height:28px;border-radius:50%;margin-top:14px;display:grid;place-items:center;font-size:.8rem;font-weight:700;border:2px solid var(--line);background:var(--ink);color:var(--muted)}
+.item[data-s=done] .node{background:var(--pos);border-color:var(--pos);color:#06231a}
+.item[data-s=doing] .node{border-color:var(--mix);color:var(--mix);box-shadow:0 0 0 0 rgba(255,200,87,.5);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(255,200,87,0)}100%{box-shadow:0 0 0 0 rgba(255,200,87,0)}}
+details.card{background:var(--ink-2);border:1px solid var(--line);border-radius:16px}
+details.card summary{list-style:none;display:flex;align-items:center;gap:12px;padding:15px 18px;cursor:pointer;border-radius:16px}
+details.card summary::-webkit-details-marker{display:none}
+details.card summary::after{content:"+";margin-left:auto;font-size:1.3rem;color:var(--muted);transition:transform .2s;line-height:1}
+details.card[open] summary::after{transform:rotate(45deg)}
+details.card summary:hover{background:rgba(126,166,255,.06)}
+.item-title{font-weight:600}
+.tag{font-size:.78rem;padding:3px 9px;border-radius:999px;background:var(--ink-3);color:var(--muted);white-space:nowrap}
+.badge{font-size:.78rem;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+[data-s=done] .badge{background:rgba(79,224,181,.15);color:var(--pos)}
+[data-s=doing] .badge{background:rgba(255,200,87,.15);color:var(--mix)}
+[data-s=todo] .badge{background:var(--ink-3);color:var(--muted)}
+details.card .body{padding:0 18px 18px}
+details.card .body p{font-size:1.1rem}
+
+/* decisões */
+.decisions{display:grid;gap:0;max-width:900px}
+.dec{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:32px;padding:26px 0;border-top:1px solid var(--line)}
+.dec:last-child{border-bottom:1px solid var(--line)}
+.dec h3{font-size:1.2rem}
+.dec p{font-size:1.1rem}
+.dec p b{color:var(--text);font-weight:600;font-family:var(--f-ui)}
+
+/* glossário */
+.tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:22px}
+.search{flex:1 1 260px;max-width:380px;position:relative}
+.search input{width:100%;height:48px;background:var(--ink-2);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:0 18px;font:inherit}
+.search input::placeholder{color:var(--muted)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.gloss details.card .body{display:grid;gap:10px}
+.gloss .proj{color:var(--text)}
+.gloss .proj b{font-family:var(--f-ui);color:var(--brand);font-weight:600}
+.empty{font-family:var(--f-ui);color:var(--muted);padding:18px 0}
+.count{font-size:.9rem;color:var(--muted)}
+
+/* rodar */
+.run{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:40px;align-items:start}
+.run-tabs{display:grid;gap:6px}
+.run-tabs button{text-align:left;padding:14px 16px;border-radius:14px;border:1px solid transparent;display:grid;gap:2px;transition:background .15s}
+.run-tabs button:hover{background:rgba(126,166,255,.07)}
+.run-tabs button[aria-selected=true]{background:var(--ink-2);border-color:var(--line)}
+.run-tabs b{font-size:1.02rem}
+.run-tabs span{font-size:.9rem;color:var(--muted)}
+.run-panel{display:grid;gap:18px}
+.code{position:relative;background:#070b17;border:1px solid var(--line);border-radius:16px}
+.code pre{padding:20px 22px;overflow:auto;font-size:.92rem;line-height:1.7;color:#d7def5;white-space:pre}
+.code .cm{color:#7a88b5}
+.copy{position:absolute;top:10px;right:10px;font-size:.82rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--ink-2)}
+.copy:hover{color:var(--text);border-color:var(--brand)}
+.ethics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:56px}
+.ethics h3{font-size:1.05rem;margin-bottom:6px}
+.ethics p{font-size:1.05rem}
+
+/* fecho */
+.closing{padding:96px 0 110px;background:linear-gradient(180deg,transparent,rgba(126,166,255,.07))}
+.closing .wrap{display:grid;gap:26px;justify-items:start}
+.closing h2{max-width:20ch}
+footer{border-top:1px solid var(--line);padding:26px 0}
+footer .wrap{display:flex;flex-wrap:wrap;gap:14px 28px;justify-content:space-between;align-items:center;color:var(--muted);font-size:.92rem}
+footer a{text-decoration:none}
+footer a:hover{color:var(--text)}
+
+/* responsivo */
+@media (max-width:1020px){
+  .hero .wrap,.flow,.prog-layout,.run{grid-template-columns:minmax(0,1fr)}
+  .hero-copy{padding-top:0}
+  .summary{position:static}
+  .sec{padding:84px 0}
+  .gloss{grid-template-columns:minmax(0,1fr)}
+  .ethics{grid-template-columns:minmax(0,1fr);gap:22px}
+  .dec{grid-template-columns:minmax(0,1fr);gap:10px}
+}
+@media (max-width:820px){
+  .menu-btn{display:flex}
+  .nav{position:fixed;left:0;right:0;top:68px;background:var(--ink);padding:14px 16px 22px;flex-direction:column;align-items:stretch;gap:2px;border-bottom:1px solid var(--line);transform:translateY(-12px);opacity:0;visibility:hidden;transition:all .2s}
+  .nav.open{transform:none;opacity:1;visibility:visible}
+  .nav a{padding:14px 12px;font-size:1.05rem}
+  .nav .nav-cta{margin:8px 0 0;text-align:center}
+}
+@media (max-width:620px){
+  body{font-size:15px}
+  .specimen{padding:16px;border-radius:18px}
+  .aspects{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fact{grid-template-columns:minmax(0,1fr);gap:4px}
+  .step-panel{padding:22px 18px}
+  .item{grid-template-columns:26px 1fr;gap:10px}
+  .node{width:24px;height:24px}
+  details.card summary{flex-wrap:wrap;row-gap:6px}
+  .timeline-caption{margin-left:36px}
+  .timeline .period{margin-left:0;width:100%}
+  .hero{padding:36px 0 72px}
+  .code pre{font-size:.82rem;padding:16px}
+  .copy{position:static;margin:10px 12px 0;display:block}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+
+/* ===== Refinos responsivos: demonstração de avaliação ===== */
+.hero .wrap,
+.hero-copy,
+.specimen,
+.spec-bar,
+.samples,
+.review,
+.aspects,
+.edit {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.specimen {
+  width: 100%;
+}
+
+.spec-bar {
+  align-items: flex-start;
+}
+
+.samples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.samples .chip {
+  min-height: 40px;
+  white-space: normal;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.review {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.55;
+}
+
+.review .mk {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.review .mk sup {
+  display: inline-block;
+  white-space: normal;
+  max-width: 100%;
+  line-height: 1.15;
+}
+
+.aspects {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1020px) {
+  .hero .wrap {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 34px;
+  }
+  .hero-copy {
+    padding-top: 0;
+    max-width: 760px;
+  }
+  .specimen {
+    max-width: 850px;
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 700px) {
+  .specimen {
+    padding: 18px;
+    border-radius: 18px;
+    gap: 16px;
+  }
+  .spec-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .samples {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .samples .chip {
+    width: 100%;
+    padding: 9px 10px;
+    font-size: .84rem;
+  }
+  .samples .chip:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .review {
+    font-size: clamp(1.28rem, 5.2vw, 1.55rem);
+    line-height: 1.55;
+    padding: 2px 0;
+  }
+  .aspects {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .asp {
+    min-height: 88px;
+    padding: 11px;
+  }
+  .reading {
+    font-size: .96rem;
+    line-height: 1.5;
+  }
+  .edit textarea {
+    min-height: 112px;
+  }
+}
+
+@media (max-width: 390px) {
+  .specimen {
+    padding: 14px;
+  }
+  .samples {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .samples .chip:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+  .review {
+    font-size: 1.22rem;
+  }
+  .aspects {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* evita movimentos excessivos em dispositivos touch e respeita preferências */
+@media (hover: none) {
+  .timeline .item details.card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+
+/* plano intensivo de entrega 20/11 */
+.deadline-panel,.team-panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,rgba(126,166,255,.10),rgba(79,224,181,.045));padding:clamp(18px,3vw,28px);margin:0 0 34px;min-width:0}
+.deadline-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.deadline-kicker{font-size:.72rem;letter-spacing:.12em;font-weight:700;color:var(--pos)}
+.deadline-top h3{font-size:clamp(1.25rem,2.6vw,1.8rem);margin:8px 0}
+.deadline-top h3 strong{color:var(--brand)}
+.deadline-top p{font:400 .98rem/1.55 var(--f-ui);max-width:68ch}
+.deadline-mark{flex:none;border:1px solid rgba(255,122,144,.4);color:var(--neg);border-radius:14px;padding:10px 14px;font-weight:800;font-size:1.1rem}
+.deadline-progress{height:8px;border-radius:99px;background:var(--ink-3);overflow:hidden;margin:22px 0 9px}
+.deadline-progress span{display:block;width:25%;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--pos),var(--brand))}
+.deadline-legend{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:.78rem}
+.deadline-legend span:first-child{color:var(--pos)}
+.sprint-grid,.team-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:22px}
+.sprint-grid article,.team-grid article{min-width:0;padding:14px;border:1px solid var(--line);border-radius:13px;background:rgba(10,15,31,.42);display:grid;align-content:start;gap:7px}
+.sprint-grid b{font:600 .76rem var(--f-code);color:var(--brand)}
+.sprint-grid strong,.team-grid b{font-size:.96rem}
+.sprint-grid small{font-size:.82rem;line-height:1.45;color:var(--muted)}
+.team-panel{margin-top:36px}
+.team-heading{display:grid;gap:8px}
+.team-grid{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px}
+.team-grid p,.team-note{font:400 .9rem/1.5 var(--f-ui);color:var(--muted)}
+.team-note{margin-top:14px;max-width:none}
+@media(max-width:850px){.sprint-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){
+ .deadline-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+ .deadline-top>div{min-width:0}
+ .deadline-mark{font-size:.9rem;padding:8px 10px}
+ .deadline-legend{display:grid;gap:5px}
+ .sprint-grid,.team-grid{grid-template-columns:minmax(0,1fr)}
+ .sprint-grid article,.team-grid article{padding:13px}
+}
+@media(max-width:390px){.deadline-panel,.team-panel{padding:15px;border-radius:16px}.deadline-top{grid-template-columns:minmax(0,1fr)}.deadline-mark{width:max-content}}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<div class="progress" aria-hidden="true"><i id="bar"></i></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#inicio" aria-label="Multidimensional Ecom AI, início">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span>multidimensional<small>.ai</small></span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
+    <nav class="nav" id="nav" aria-label="Navegação principal">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#andamento">Próximos passos</a>
+      <a href="#conceitos">Conceitos</a>
+      <a href="#rodar">Rodar o projeto</a>
+      <a class="nav-cta" href="https://github.com/Mariarocha0/Projeto-IA-ecommerce" target="_blank" rel="noreferrer">Ver no GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="wrap">
+    <div class="hero-copy">
+      <span class="eyebrow"><span class="eyebrow-dot"></span> Inteligência artificial aplicada ao e-commerce</span>
+      <h1>A nota diz 4,3. <em>O texto diz onde a compra falhou.</em></h1>
+      <p>O Multidimensional Ecom AI junta avaliações da Amazon e do Mercado Livre e separa o que cada pessoa escreveu sobre preço, desempenho, bateria e design. Troque o texto ao lado e veja a ideia funcionando.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#como-funciona">Ver como funciona</a>
+        <a class="btn btn-ghost" href="https://github.com/Mariarocha0/Projeto-IA-ecommerce" target="_blank" rel="noreferrer">Código no GitHub</a>
+      </div>
+      <p class="fineprint"><b>Só nota, texto e data.</b> A coleta não guarda nome nem perfil de quem avaliou.</p>
+    </div>
+
+    <figure class="specimen" aria-labelledby="spec-title">
+      <div class="spec-bar">
+        <span class="spec-title" id="spec-title">Avaliação de exemplo</span>
+        <div class="samples" role="group" aria-label="Escolher exemplo" id="samples"></div>
+      </div>
+      <blockquote class="review run" id="review" aria-live="polite"></blockquote>
+      <div class="aspects" id="aspects"></div>
+      <p class="reading" id="reading"></p>
+      <div class="edit">
+        <label for="txt">Ou escreva uma avaliação sua</label>
+        <textarea id="txt" maxlength="500" placeholder="Ex.: A tela é linda, mas a bateria descarrega rápido."></textarea>
+      </div>
+      <p class="note">Demonstração simplificada: reconhece palavras de um dicionário pequeno, direto no navegador, sem enviar nada. O projeto usa modelos de ABSA na etapa E2.</p>
+    </figure>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="sec" id="como-funciona">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Como o projeto funciona</h2>
+      <p>Quatro etapas, cada uma com uma entrada, uma saída e uma forma própria de medir se deu certo. Escolha uma etapa para ver os detalhes.</p>
+    </div>
+    <div class="flow">
+      <div class="steps" id="steps" role="tablist" aria-label="Etapas do pipeline" aria-orientation="vertical"><span class="fill" id="stepFill"></span></div>
+      <div class="step-panel" id="stepPanel" role="tabpanel" tabindex="0"></div>
+    </div>
+    <div class="tracks">
+      <p>Duas trilhas correm em paralelo, uma de aspectos e recomendação e outra de satisfação, e só se encontram no relatório final. Os modelos de cada uma são independentes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ANDAMENTO -->
+<section class="sec" id="andamento">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="section-kicker">Do planejamento à entrega</span>
+      <h2>O caminho até a entrega <span aria-hidden="true">✳</span></h2>
+      <p>Plano de entrega concentrado até 20/11/2026. As etapas concluídas foram preservadas e as pendências foram reorganizadas por dia para proteger o prazo final.</p>
+    </div>
+    <div class="deadline-panel" aria-label="Plano intensivo de entrega">
+      <div class="deadline-top">
+        <div>
+          <span class="deadline-kicker">CONTAGEM REGRESSIVA · EQUIPE DE 2 A 3 PESSOAS</span>
+          <h3>Entrega final em <strong>20/11/2026</strong></h3>
+          <p>Meta: resultados consolidados até 18/11; dia 19 para revisão; dia 20 reservado à conferência e submissão.</p>
+        </div>
+        <span class="deadline-mark">10 dias</span>
+      </div>
+      <div class="deadline-progress" role="img" aria-label="Duas das oito frentes principais foram registradas como concluídas">
+        <span></span>
+      </div>
+      <div class="deadline-legend"><span>✓ Coleta inicial e validação/limpeza registradas como concluídas</span><span>Fechamento da rodada de coleta ainda precisa ser confirmado</span></div>
+      <div class="sprint-grid">
+        <article><b>11–13/11</b><strong>Fechar E1 e iniciar E2</strong><small>Conferir coleta pendente, casar produtos e iniciar aspectos/sentimentos.</small></article>
+        <article><b>14–16/11</b><strong>Concluir E2, E3 e E4</strong><small>Validar ABSA, agregar satisfação, gerar ranking e calcular NDCG.</small></article>
+        <article><b>17–18/11</b><strong>Experimentos e resultados</strong><small>Executar o pipeline integrado e consolidar métricas, tabelas e gráficos.</small></article>
+        <article><b>19–20/11</b><strong>Revisar e entregar</strong><small>Revisão do artigo no dia 19; testes, organização e submissão no dia 20.</small></article>
+      </div>
+    </div>
+    <div class="dec" style="margin:0 0 22px;padding:18px 20px;border-color:rgba(255,170,90,.35);background:rgba(255,170,90,.06)">
+      <h3 style="margin:0 0 8px">Reta final: entrega em 20/11</h3>
+      <p style="margin:0">Equipe de 2–3 pessoas. Prioridade: concluir E1–E4 e consolidar os experimentos até 18/11; revisar o artigo em 19/11; reservar 20/11 para testes e submissão. Congelar novas funcionalidades e registrar limitações em vez de preencher lacunas com resultados não verificados.</p>
+    </div>
+    <div class="prog-layout">
+      <aside class="summary" aria-label="Resumo do andamento">
+        <div class="summary-label">
+          <span class="section-kicker">Painel do projeto</span>
+          <span class="summary-note">Status das frentes principais</span>
+        </div>
+        <div class="ring">
+          <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="ringFg" cx="50" cy="50" r="42" stroke-dasharray="0 263.9"/></svg>
+          <div>
+            <div class="big" id="pct">0<small>%</small></div>
+            <p id="pctTxt"></p>
+          </div>
+        </div>
+        <div class="filters" id="filters" role="group" aria-label="Filtrar por situação">
+          <button class="chip" data-f="all" aria-pressed="true">Tudo</button>
+          <button class="chip" data-f="done" aria-pressed="false">Concluído</button>
+          <button class="chip" data-f="doing" aria-pressed="false">Em andamento</button>
+          <button class="chip" data-f="todo" aria-pressed="false">A fazer</button>
+        </div>
+      </aside>
+      <div class="timeline-wrap">
+        <div class="timeline-caption"><span>PLANO DE ENTREGA · 11 A 20/11</span><span>Abra uma etapa para ver a próxima ação</span></div>
+        <ol class="timeline" id="timeline"></ol>
+      </div>
+    </div>
+
+    <div class="team-panel">
+      <div class="team-heading"><span class="section-kicker">Organização sugerida</span><h3>Divisão de trabalho para 2–3 pessoas</h3></div>
+      <div class="team-grid">
+        <article><b>Frente técnica</b><p>Correspondência dos produtos, integração do pipeline e execução de E1–E4.</p></article>
+        <article><b>Frente de validação</b><p>Amostra anotada, conferência do ABSA, métricas e checagem dos resultados.</p></article>
+        <article><b>Frente de artigo</b><p>Metodologia, tabelas, gráficos, discussão e revisão. Com duas pessoas, dividir esta frente entre ambas.</p></article>
+      </div>
+      <p class="team-note">A divisão é uma sugestão; ajustem os responsáveis conforme as habilidades e a disponibilidade real de cada integrante.</p>
+    </div>
+    <div class="sec-head" style="margin-top:96px">
+      <h2>Decisões em aberto e plano B</h2>
+      <p>O que ainda depende de escolha, e o que fazemos se algo não sair como planejado. Os resultados são exploratórios, e a amostra é pequena de propósito.</p>
+    </div>
+    <div class="decisions">
+      <div class="dec"><h3>Satisfação em diálogos ou em comentários?</h3><p>O subconjunto em inglês do USS não é de e-commerce, e o único conjunto de e-commerce que encontramos, o JDDC, é em chinês. <b>Alternativa:</b> classificar a satisfação nos próprios comentários em português.</p></div>
+      <div class="dec"><h3>Consolidar por produto ou por categoria?</h3><p>Por produto exige casar o mesmo item entre as lojas, o que dá mais precisão e mais trabalho. <b>Alternativa:</b> consolidar por categoria ou marca, que é mais robusto e menos exato.</p></div>
+      <div class="dec"><h3>Coleta própria ou datasets públicos?</h3><p>Não achamos dataset público com o mesmo produto nas duas lojas, por isso coletamos. <b>Plano B:</b> usar Olist e B2W-Reviews01 se houver bloqueio ou volume insuficiente.</p></div>
+      <div class="dec"><h3>Qual evento-alvo e limite de páginas?</h3><p>Define o formato final do artigo, escrito no modelo SBC. Ainda aguarda orientação.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCEITOS -->
+<section class="sec" id="conceitos">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Conceitos e ferramentas</h2>
+      <p>Os termos que aparecem no projeto, explicados em poucas linhas. Busque por nome ou filtre por tipo.</p>
+    </div>
+    <div class="tools">
+      <div class="search"><input type="search" id="q" placeholder="Buscar: ABSA, NDCG, pandas…" aria-label="Buscar termo"></div>
+      <div class="filters" id="gfilters" role="group" aria-label="Filtrar por tipo">
+        <button class="chip" data-g="all" aria-pressed="true">Tudo</button>
+        <button class="chip" data-g="c" aria-pressed="false">Conceitos</button>
+        <button class="chip" data-g="f" aria-pressed="false">Ferramentas</button>
+      </div>
+      <span class="count" id="gcount" aria-live="polite"></span>
+    </div>
+    <div class="gloss" id="gloss"></div>
+    <p class="empty" id="gempty" hidden>Nenhum termo encontrado. Tente outra palavra ou limpe o filtro.</p>
+  </div>
+</section>
+
+<!-- RODAR -->
+<section class="sec" id="rodar">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Rodar o coletor</h2>
+      <p>O caminho mais curto da instalação até uma amostra pronta para conferir. Cada comando tem um botão para copiar.</p>
+    </div>
+    <div class="run">
+      <div class="run-tabs" id="runTabs" role="tablist" aria-label="Passos" aria-orientation="vertical"></div>
+      <div class="run-panel" id="runPanel" role="tabpanel" tabindex="0"></div>
+    </div>
+    <div class="ethics">
+      <div><h3>Só o necessário</h3><p>Guardamos nota, texto e data. Nenhum nome, foto ou perfil.</p></div>
+      <div><h3>Ritmo lento</h3><p>Pausas aleatórias entre as páginas, para não sobrecarregar as lojas.</p></div>
+      <div><h3>Para no captcha</h3><p>Se a loja pedir verificação, o coletor para. Ele não tenta contornar bloqueios.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <h2>Todo o código e os dados de apoio estão no GitHub.</h2>
+    <p>Acompanhe o andamento, veja o coletor e reproduza a coleta no seu computador.</p>
+    <a class="btn btn-primary" href="https://github.com/Mariarocha0/Projeto-IA-ecommerce" target="_blank" rel="noreferrer">Abrir o repositório</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#inicio"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>multidimensional<small>.ai</small></span></a>
+    <span>Projeto acadêmico de IA Aplicada. Resultados exploratórios.</span>
+    <a href="#inicio">Voltar ao topo</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function plural(n,s,p){return n+' '+(n===1?s:p)}
+
+/* ============ barra de leitura, menu e destaque do link atual ============ */
+var bar=$('#bar');
+function onScroll(){
+  var h=document.documentElement,max=h.scrollHeight-h.clientHeight;
+  bar.style.transform='scaleX('+(max>0?Math.min(1,h.scrollTop/max):0)+')';
+}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+var menuBtn=$('#menuBtn'),nav=$('#nav');
+menuBtn.addEventListener('click',function(){
+  var open=nav.classList.toggle('open');
+  menuBtn.setAttribute('aria-expanded',open);
+  menuBtn.setAttribute('aria-label',open?'Fechar menu':'Abrir menu');
+});
+$$('a',nav).forEach(function(a){a.addEventListener('click',function(){nav.classList.remove('open');menuBtn.setAttribute('aria-expanded','false')})});
+
+var links=$$('.nav a[href^="#"]');
+if('IntersectionObserver' in window){
+  var spy=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){links.forEach(function(a){a.setAttribute('aria-current',a.getAttribute('href')==='#'+e.target.id)})}
+    });
+  },{rootMargin:'-40% 0px -55% 0px'});
+  links.forEach(function(a){var s=$(a.getAttribute('href'));if(s)spy.observe(s)});
+}
+
+/* ============ abas acessíveis ============ */
+function tabs(list,onSelect){
+  var items=$$('[role=tab]',list);
+  function select(i,focus){
+    items.forEach(function(t,j){var on=i===j;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1});
+    if(focus)items[i].focus();
+    onSelect(i,items[i]);
+  }
+  items.forEach(function(t,i){
+    t.addEventListener('click',function(){select(i)});
+    t.addEventListener('keydown',function(e){
+      var k=e.key,n=null;
+      if(k==='ArrowRight'||k==='ArrowDown')n=(i+1)%items.length;
+      else if(k==='ArrowLeft'||k==='ArrowUp')n=(i-1+items.length)%items.length;
+      else if(k==='Home')n=0;else if(k==='End')n=items.length-1;
+      if(n!==null){e.preventDefault();select(n,true)}
+    });
+  });
+  select(0);
+  return select;
+}
+
+/* ============ DEMONSTRAÇÃO: aspectos em uma avaliação ============ */
+var norm=function(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')};
+var set=function(a){var o={};a.split(' ').forEach(function(w){o[w]=1});return o};
+var ASPECTS={
+  preco:{label:'Preço',kw:set('preco caro cara barato barata custo valor promocao desconto compensa pagar pagou pago')},
+  desempenho:{label:'Desempenho',kw:set('desempenho performance processador velocidade jogos jogo trava travando travamento esquenta aquece lento lenta fluido fluida fluidez memoria')},
+  bateria:{label:'Bateria',kw:set('bateria carga carrega carregamento autonomia descarrega')},
+  design:{label:'Design',kw:set('design tela visual bonito bonita lindo linda cor cores acabamento bordas leve pesado tamanho material')}
+};
+var ORDER=['preco','desempenho','bateria','design'];
+var POS=set('bom boa otimo otima excelente rapido rapida fluido fluida bonito bonita lindo linda perfeito perfeita recomendo adorei amei maravilhoso maravilhosa melhor incrivel barato barata leve top satisfeito satisfeita compensa');
+var NEG=set('ruim pessimo pessima lento lenta caro cara trava travando fraco fraca decepcionou decepcionante horrivel esquenta aquece descarrega problema defeito fragil pesado');
+var NEGATORS=set('nao nunca nem jamais');
+var PHRASES=[['vale a pena',1],['vale cada centavo',1],['dura o dia todo',1],['dura bastante',1],['bom custo',1],
+  ['nao compensa',-1],['nao vale',-1],['descarrega rapido',-1],['acaba rapido',-1],['nao dura',-1],['caro demais',-1],['nao recomendo',-1]];
+
+function analyzeSeg(raw){
+  var n=norm(raw);
+  if(/\b(chegou|frete|embalagem|correios)\b/.test(n))return null;
+  var toks=n.match(/[a-z0-9]+/g)||[];
+  var aspects=ORDER.filter(function(k){return toks.some(function(t){return ASPECTS[k].kw[t]})});
+  if(!aspects.length)return null;
+  var t=' '+toks.join(' ')+' ',s=0;
+  PHRASES.forEach(function(p){var q=' '+p[0]+' ';if(t.indexOf(q)>-1){s+=p[1];t=t.replace(q,' ')}});
+  var w=t.trim().split(/\s+/);
+  w.forEach(function(x,i){
+    var v=POS[x]?1:NEG[x]?-1:0;if(!v)return;
+    var neg=w.slice(Math.max(0,i-2),i).some(function(y){return NEGATORS[y]});
+    s+=neg?-v:v;
+  });
+  return {aspects:aspects,score:s};
+}
+function splitText(text){
+  var re=/[.!?;,\n]+|\s+(?:mas|porém|porem|e)\s+/gi,parts=[],last=0,m;
+  while((m=re.exec(text))){
+    if(m.index>last)parts.push({t:text.slice(last,m.index),seg:true});
+    parts.push({t:m[0],seg:false});last=m.index+m[0].length;
+  }
+  if(last<text.length)parts.push({t:text.slice(last),seg:true});
+  return parts;
+}
+var STATE={pos:'Positivo',neg:'Negativo',mix:'Misto',neu:'Neutro',none:'Não citado'};
+function analyze(text){
+  var parts=splitText(text),acc={};
+  ORDER.forEach(function(k){acc[k]={sum:0,hasPos:false,hasNeg:false,ev:'',n:0}});
+  parts.forEach(function(p){
+    if(!p.seg)return;
+    var r=analyzeSeg(p.t);p.r=r;
+    if(!r)return;
+    r.aspects.forEach(function(k){
+      var a=acc[k];a.n++;a.sum+=r.score;
+      if(r.score>0)a.hasPos=true;if(r.score<0)a.hasNeg=true;
+      if(!a.ev)a.ev=p.t.trim();
+    });
+  });
+  ORDER.forEach(function(k){
+    var a=acc[k];
+    a.state=!a.n?'none':a.sum>0?'pos':a.sum<0?'neg':(a.hasPos&&a.hasNeg)?'mix':'neu';
+  });
+  return {parts:parts,acc:acc};
+}
+var reviewEl=$('#review'),aspectsEl=$('#aspects'),readingEl=$('#reading'),txt=$('#txt');
+function render(text){
+  var res=analyze(text);
+  reviewEl.textContent='';
+  var idx=0;
+  res.parts.forEach(function(p){
+    if(!p.seg||!p.r){reviewEl.appendChild(document.createTextNode(p.t));return}
+    var lead=p.t.match(/^\s*/)[0],trail=p.t.match(/\s*$/)[0],core=p.t.trim();
+    if(lead)reviewEl.appendChild(document.createTextNode(lead));
+    var m=el('span','mk',core);
+    m.setAttribute('data-s',p.r.score>0?'pos':p.r.score<0?'neg':'neu');
+    m.style.setProperty('--i',idx++);
+    m.appendChild(el('sup',null,p.r.aspects.map(function(k){return ASPECTS[k].label.toLowerCase()}).join(' e ')));
+    reviewEl.appendChild(m);
+    if(trail)reviewEl.appendChild(document.createTextNode(trail));
+  });
+  if(!text.trim())reviewEl.textContent='Escreva uma avaliação abaixo para ver os aspectos.';
+  reviewEl.classList.remove('run');void reviewEl.offsetWidth;if(!reduce)reviewEl.classList.add('run');
+
+  aspectsEl.textContent='';
+  var pos=0,neg=0,cited=0;
+  ORDER.forEach(function(k){
+    var a=res.acc[k],d=el('div','asp');d.setAttribute('data-s',a.state);
+    d.appendChild(el('b',null,ASPECTS[k].label));
+    d.appendChild(el('strong',null,STATE[a.state]));
+    d.appendChild(el('small',null,a.ev?'“'+a.ev+'”':'Sem menção nesta avaliação.'));
+    aspectsEl.appendChild(d);
+    if(a.n)cited++;
+    if(a.state==='pos')pos++;if(a.state==='neg')neg++;
+  });
+  var msg;
+  if(!cited)msg='Nenhum dos quatro aspectos foi reconhecido. Cite preço, desempenho, bateria ou design.';
+  else if(pos&&neg)msg='Na mesma avaliação: '+plural(pos,'aspecto positivo','aspectos positivos')+' e '+plural(neg,'negativo','negativos')+'. Uma nota geral esconderia essa diferença.';
+  else if(neg)msg=plural(neg,'aspecto negativo','aspectos negativos')+' e nenhum positivo.';
+  else if(pos)msg=plural(pos,'aspecto positivo','aspectos positivos')+' e nenhum negativo.';
+  else msg='Os aspectos aparecem, mas sem opinião clara.';
+  readingEl.textContent=msg;
+}
+var SAMPLES=[
+  {n:'Elogia e critica',t:'O desempenho é excelente e a tela é linda, mas a bateria não dura nem um dia inteiro. Achei caro pelo que entrega.'},
+  {n:'Quase tudo bom',t:'Chegou rápido e o preço estava ótimo. Bateria dura bastante, design bonito, só esquenta um pouco em jogos.'},
+  {n:'Reclamação',t:'Não recomendo. Trava toda hora, a bateria descarrega rápido e o preço não compensa.'}
+];
+var samplesEl=$('#samples');
+SAMPLES.forEach(function(s,i){
+  var b=el('button','chip',s.n);b.type='button';b.setAttribute('aria-pressed',i===0);
+  b.addEventListener('click',function(){
+    $$('.chip',samplesEl).forEach(function(c){c.setAttribute('aria-pressed','false')});
+    b.setAttribute('aria-pressed','true');txt.value=s.t;render(s.t);
+  });
+  samplesEl.appendChild(b);
+});
+txt.value=SAMPLES[0].t;render(txt.value);
+var tmr;
+txt.addEventListener('input',function(){
+  $$('.chip',samplesEl).forEach(function(c){c.setAttribute('aria-pressed','false')});
+  clearTimeout(tmr);tmr=setTimeout(function(){render(txt.value)},260);
+});
+
+/* ============ PIPELINE E1–E4 ============ */
+var STAGES=[
+ {id:'E1',name:'Ingestão e casamento',sub:'Coleta e liga o mesmo produto nas duas lojas',
+  lead:'Transforma links de produtos em tabelas limpas de avaliações e descobre quando dois anúncios são o mesmo produto.',
+  inp:'Links de produtos da Amazon e do Mercado Livre.',
+  what:'Limpa o link e guarda o ID do produto (ASIN ou MLB). Coleta nota, texto e data com Selenium e BeautifulSoup. Liga o mesmo produto nas duas lojas por um rótulo.',
+  out:'<code>avaliacoes.csv</code> e <code>produtos.csv</code>, sem linhas repetidas.',
+  chk:'Conferência manual de uma amostra de notas e precisão do casamento entre lojas.'},
+ {id:'E2',name:'Aspectos e termos',sub:'O que se disse sobre preço, bateria, design…',
+  lead:'Lê o texto de cada avaliação e separa as opiniões por aspecto, em vez de dar um único veredito.',
+  inp:'Textos das avaliações coletadas.',
+  what:'Identifica os aspectos citados (preço, desempenho, bateria, design) e o sentimento de cada um (ABSA). Calcula TF-IDF para achar os termos que mais caracterizam cada produto.',
+  out:'Uma tabela com aspecto e sentimento por avaliação.',
+  chk:'Amostra anotada por duas pessoas, com κ de Cohen para medir a concordância.'},
+ {id:'E3',name:'Agregação e satisfação',sub:'Do texto ao perfil de cada produto',
+  lead:'Resume centenas de opiniões em um perfil por produto e por loja.',
+  inp:'Aspectos e sentimentos de cada avaliação.',
+  what:'Soma os resultados por produto e por loja. Classifica a satisfação em positiva, neutra ou negativa.',
+  out:'O perfil de cada produto: aspectos fortes, fracos e nível de satisfação.',
+  chk:'Comparação com as notas em estrelas e com uma anotação manual.'},
+ {id:'E4',name:'Ranking e diagnóstico',sub:'Qual produto serve para qual pessoa',
+  lead:'Usa os perfis para ordenar produtos de acordo com o que cada tipo de comprador valoriza.',
+  inp:'Perfis dos produtos e perfis de preferência de quem compra.',
+  what:'Ordena os produtos conforme o que cada perfil valoriza e escreve o diagnóstico final.',
+  out:'Um ranking por perfil e o relatório do projeto.',
+  chk:'NDCG contra uma referência de relevância anotada por duas pessoas.'}
+];
+var stepsEl=$('#steps'),panel=$('#stepPanel'),fill=$('#stepFill');
+STAGES.forEach(function(s,i){
+  var b=el('button','step');b.type='button';b.id='st'+i;b.setAttribute('role','tab');b.setAttribute('aria-controls','stepPanel');
+  b.innerHTML='<span class="dot">'+s.id+'</span><span><b></b><span class="sub"></span></span>';
+  $('b',b).textContent=s.name;$('.sub',b).textContent=s.sub;
+  stepsEl.appendChild(b);
+});
+tabs(stepsEl,function(i,tab){
+  var s=STAGES[i];
+  $$('.step',stepsEl).forEach(function(t,j){t.classList.toggle('past',j<i)});
+  fill.style.setProperty('--p',STAGES.length>1?i/(STAGES.length-1):0);
+  panel.setAttribute('aria-labelledby',tab.id);
+  panel.innerHTML='<div class="swap"><h3></h3><p class="lead-p"></p></div><dl class="facts swap">'+
+    '<div class="fact"><dt>Entrada</dt><dd>'+s.inp+'</dd></div>'+
+    '<div class="fact"><dt>O que acontece</dt><dd>'+s.what+'</dd></div>'+
+    '<div class="fact"><dt>Saída</dt><dd>'+s.out+'</dd></div>'+
+    '<div class="fact"><dt>Como medimos</dt><dd>'+s.chk+'</dd></div></dl>';
+  $('h3',panel).textContent=s.id+'. '+s.name;
+  $('.lead-p',panel).textContent=s.lead;
+});
+
+/* ============ ANDAMENTO · PLANO DE ENTREGA 20/11/2026 ============ */
+var ROADMAP=[
+ {t:'Proposta, escopo e arquitetura',s:'done',g:'Planejamento',period:'Concluído',d:'Objetivos, escopo e arquitetura do projeto definidos. A partir de agora, evitar novas funcionalidades que não sejam essenciais para a entrega.',next:'Manter o escopo congelado e priorizar a conclusão e a validação do pipeline.'},
+ {t:'Coleta principal de avaliações',s:'done',g:'E1',period:'Concluído · informado pela equipe',d:'Coleta de avaliações da Amazon e do Mercado Livre registrada como concluída. A equipe também informou que a coleta ainda está em andamento, então falta confirmar o fechamento da rodada/piloto.',next:'Confirmar se a rodada final terminou, conferir cobertura por loja e registrar eventuais falhas ou limitações.'},
+ {t:'Validação e limpeza dos dados',s:'done',g:'E1',period:'Concluído · informado pela equipe',d:'Validação e limpeza dos dados marcadas como concluídas pela equipe.',next:'Congelar uma versão identificada dos dados e guardar um backup para os experimentos.'},
+ {t:'Fechar rodada de coleta e congelar base',s:'doing',g:'E1',period:'11/11 · confirmar',d:'Última checagem da coleta, dos campos essenciais, duplicatas e cobertura das duas plataformas. Não reabrir a coleta sem necessidade metodológica.',next:'Confirmar encerramento da coleta e salvar a base final com data/versão.'},
+ {t:'Correspondência Amazon × Mercado Livre',s:'todo',g:'E1',period:'12/11',d:'Associar os mesmos produtos entre as lojas (ASIN/MLB), revisar pares duvidosos e registrar o critério de correspondência.',next:'Gerar tabela de pares correspondentes e uma lista curta dos casos não resolvidos.'},
+ {t:'E2 · Extração de aspectos e sentimentos',s:'todo',g:'E2',period:'13/11',d:'Executar a análise baseada em aspectos (ABSA) sobre os comentários, mantendo a saída ligada ao comentário e ao produto de origem.',next:'Rodar o fluxo E2 na base congelada e salvar resultados reproduzíveis.'},
+ {t:'E2 · Validação da análise',s:'todo',g:'E2',period:'14/11',d:'Conferir uma amostra anotada por integrantes da equipe, registrar concordâncias, erros e limitações do modelo.',next:'Fechar a amostra de validação, comparar rótulos e documentar métricas e exemplos.'},
+ {t:'E3 · Agregação e satisfação',s:'todo',g:'E3',period:'15/11',d:'Agregar aspectos e sentimentos por produto e produzir os indicadores/classificação de satisfação conforme a unidade de análise definida.',next:'Fixar a unidade de análise e gerar uma tabela de perfil/satisfação por produto.'},
+ {t:'E4 · Ranking e NDCG',s:'todo',g:'E4',period:'16/11',d:'Gerar ranking por perfil de preferência e avaliar a ordenação com julgamentos de relevância e NDCG.',next:'Definir julgamentos de relevância, executar o ranking e registrar NDCG e parâmetros.'},
+ {t:'Execução integrada e reprodutibilidade',s:'todo',g:'Experimentos',period:'17/11',d:'Executar o pipeline completo com versões congeladas de dados, código e parâmetros; corrigir apenas erros que bloqueiem os resultados centrais.',next:'Fazer uma execução ponta a ponta e guardar logs, parâmetros e saídas.'},
+ {t:'Consolidar resultados, tabelas e gráficos',s:'todo',g:'Experimentos',period:'18/11 · marco crítico',d:'Organizar métricas, tabelas, gráficos, exemplos qualitativos e limitações. Os resultados experimentais devem estar consolidados até esta data.',next:'Fechar os resultados que entrarão no artigo; não deixar experimento essencial para os dias finais.'},
+ {t:'Finalizar e revisar o artigo',s:'todo',g:'Entrega',period:'19/11',d:'Completar resultados e discussão, revisar metodologia, referências, formatação e consistência entre texto, tabelas e experimentos.',next:'Fazer revisão final e preparar todos os arquivos exigidos para submissão.'},
+ {t:'Testes finais e entrega',s:'todo',g:'Entrega',period:'20/11 · prazo final',d:'Conferir arquivos, links, execução/documentação, organização do pacote e realizar a submissão.',next:'Entregar e confirmar o recebimento. Este dia deve ser reservado à conferência, não a novas funcionalidades.'}
+];
+var SLABEL={done:'Concluído',doing:'Em andamento',todo:'A fazer'};
+var tl=$('#timeline');
+ROADMAP.forEach(function(r){
+  var li=el('li','item');li.setAttribute('data-s',r.s);
+  var node=el('span','node',r.s==='done'?'✓':r.s==='doing'?'●':'');node.setAttribute('aria-hidden','true');
+  var d=el('details','card');
+  var sm=el('summary');
+  sm.appendChild(el('span','item-title',r.t));
+  sm.appendChild(el('span','tag',r.g));
+  sm.appendChild(el('span','badge',SLABEL[r.s]));
+  if(r.period)sm.appendChild(el('span','period',r.period));
+  var body=el('div','body');body.appendChild(el('p',null,r.d));
+  if(r.next){var nx=el('p','next-action');nx.textContent='Próxima ação: '+r.next;body.appendChild(nx)}
+  d.appendChild(sm);d.appendChild(body);
+  li.appendChild(node);li.appendChild(d);tl.appendChild(li);
+});
+var nDone=ROADMAP.filter(function(r){return r.s==='done'}).length,
+    nDoing=ROADMAP.filter(function(r){return r.s==='doing'}).length;
+var pct=Math.round((nDone+nDoing*0.5)/ROADMAP.length*100);
+$('#pct').firstChild.nodeValue=pct;
+$('#pctTxt').textContent=nDone+' de '+ROADMAP.length+' itens concluídos, '+nDoing+' em andamento.';
+var ring=$('#ringFg'),C=2*Math.PI*42;
+function fillRing(){ring.setAttribute('stroke-dasharray',(C*pct/100)+' '+C)}
+if('IntersectionObserver' in window&&!reduce){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){fillRing();io.disconnect()}})},{threshold:.4});
+  io.observe($('.ring'));
+}else fillRing();
+$$('#filters .chip').forEach(function(b){
+  b.addEventListener('click',function(){
+    $$('#filters .chip').forEach(function(c){c.setAttribute('aria-pressed',c===b)});
+    var f=b.getAttribute('data-f');
+    $$('.item',tl).forEach(function(li){li.hidden=!(f==='all'||li.getAttribute('data-s')===f)});
+  });
+});
+
+/* ============ GLOSSÁRIO ============ */
+var GLOSS=[
+ {g:'c',t:'ABSA',full:'Análise de sentimento por aspecto',d:'Em vez de classificar uma avaliação inteira como positiva ou negativa, identifica cada aspecto citado (preço, bateria…) e o sentimento de cada um.',p:'É a etapa E2.'},
+ {g:'c',t:'TF-IDF',full:'Peso de palavras em textos',d:'Dá mais peso a palavras que aparecem muito em um texto e pouco no conjunto todo. Serve para achar os termos que caracterizam um produto e para medir a semelhança entre textos.',p:'Usado na etapa E2.'},
+ {g:'c',t:'NDCG',full:'Qualidade de um ranking',d:'Nota de 0 a 1 que premia colocar os itens mais relevantes nas primeiras posições. 1 é o ranking ideal.',p:'Mede o ranking da etapa E4 contra uma relevância anotada por duas pessoas.'},
+ {g:'c',t:'κ de Cohen',full:'Concordância entre anotadores',d:'Mede o quanto duas pessoas concordam ao classificar os mesmos itens, descontando a concordância que aconteceria por acaso.',p:'Valida a amostra anotada do ABSA.'},
+ {g:'c',t:'Scraper',full:'Coletor automático de páginas',d:'Programa que abre páginas da web e extrai dados delas sem ninguém copiar à mão.',p:'O nosso lê nota, texto e data, em ritmo lento, e para se aparecer captcha.'},
+ {g:'c',t:'Casamento de produtos',full:'Descobrir que dois anúncios são o mesmo item',d:'Anúncios de lojas diferentes têm códigos e nomes diferentes. O casamento liga os que se referem ao mesmo produto.',p:'Liga o ASIN da Amazon ao código MLB do Mercado Livre.'},
+ {g:'f',t:'Selenium',full:'Controla um navegador de verdade',d:'Abre o Chrome por código: carrega a página, clica em botões e rola a tela, como uma pessoa faria.',p:'Navega até as avaliações de cada loja.'},
+ {g:'f',t:'BeautifulSoup',full:'Lê o HTML de uma página',d:'Biblioteca Python que encontra partes específicas do código da página, como a nota, o texto e a data de uma avaliação.',p:'Extrai os campos que o Selenium carregou.'},
+ {g:'f',t:'pandas',full:'Tabelas em Python',d:'Biblioteca para trabalhar com dados em tabelas (DataFrames): limpar, juntar, agregar e calcular métricas.',p:'Grava os CSVs sem duplicar e fará a agregação e as métricas.'}
+];
+var gl=$('#gloss'),gcount=$('#gcount'),gempty=$('#gempty'),gq=$('#q'),gsel='all';
+GLOSS.forEach(function(x){
+  var d=el('details','card');d.setAttribute('data-g',x.g);d.setAttribute('data-k',norm(x.t+' '+x.full+' '+x.d));
+  var sm=el('summary');
+  sm.appendChild(el('span','item-title',x.t));
+  sm.appendChild(el('span','tag',x.full));
+  var b=el('div','body');
+  b.appendChild(el('p',null,x.d));
+  var pp=el('p','proj');pp.appendChild(el('b',null,'No projeto: '));pp.appendChild(document.createTextNode(x.p));b.appendChild(pp);
+  d.appendChild(sm);d.appendChild(b);gl.appendChild(d);
+});
+function filterGloss(){
+  var q=norm(gq.value.trim()),shown=0;
+  $$('details',gl).forEach(function(d){
+    var ok=(gsel==='all'||d.getAttribute('data-g')===gsel)&&(!q||d.getAttribute('data-k').indexOf(q)>-1);
+    d.hidden=!ok;if(ok)shown++;
+  });
+  gempty.hidden=shown>0;
+  gcount.textContent=plural(shown,'termo','termos');
+}
+gq.addEventListener('input',filterGloss);
+$$('#gfilters .chip').forEach(function(b){
+  b.addEventListener('click',function(){
+    $$('#gfilters .chip').forEach(function(c){c.setAttribute('aria-pressed',c===b)});
+    gsel=b.getAttribute('data-g');filterGloss();
+  });
+});
+filterGloss();
+
+/* ============ RODAR O COLETOR ============ */
+var RUN=[
+ {t:'Instalar',s:'Dependências do projeto',p:'Instale as bibliotecas listadas no arquivo de requisitos.',c:'pip install -r requirements.txt'},
+ {t:'Entrar nas lojas',s:'Login manual, uma vez',p:'O Chrome abre. Entre você mesmo na Amazon e no Mercado Livre e volte ao terminal. A sessão fica salva no perfil.',c:'python coleta_avaliacoes.py --login'},
+ {t:'Listar os produtos',s:'Arquivo produtos.txt',p:'Uma linha por produto, no formato rótulo | link. O mesmo rótulo nas duas lojas liga o par. Pode colar o link como veio, com rastreamento e tudo.',c:'# rótulo | link\niphone17-256 | https://www.mercadolivre.com.br/p/MLB1055308917\niphone17-256 | https://www.amazon.com.br/dp/B0GQW2J4SK'},
+ {t:'Coletar',s:'Gera os CSVs',p:'Na primeira vez use --debug para salvar o HTML das páginas. Se os seletores quebrarem, é nele que você descobre o que mudou. Rodar de novo não repete linhas.',c:'python coleta_avaliacoes.py --debug\npython coleta_avaliacoes.py'},
+ {t:'Conferir',s:'Qualidade e amostra manual',p:'O resumo mostra quantas avaliações vieram sem nota, texto ou data. A amostra sorteia avaliações para você conferir a nota à mão e medir a concordância.',c:'python coleta_avaliacoes.py --resumo\npython coleta_avaliacoes.py --amostra 10'}
+];
+var rt=$('#runTabs'),rp=$('#runPanel');
+RUN.forEach(function(r,i){
+  var b=el('button',null);b.type='button';b.id='rt'+i;b.setAttribute('role','tab');b.setAttribute('aria-controls','runPanel');
+  b.appendChild(el('b',null,(i+1)+'. '+r.t));b.appendChild(el('span',null,r.s));rt.appendChild(b);
+});
+tabs(rt,function(i,tab){
+  var r=RUN[i];
+  rp.setAttribute('aria-labelledby',tab.id);
+  rp.textContent='';
+  rp.appendChild(el('p',null,r.p));
+  var box=el('div','code'),pre=el('pre'),code=el('code');
+  r.c.split('\n').forEach(function(line,k){
+    if(k)code.appendChild(document.createTextNode('\n'));
+    if(line.charAt(0)==='#')code.appendChild(el('span','cm',line));else code.appendChild(document.createTextNode(line));
+  });
+  pre.appendChild(code);
+  var cp=el('button','copy','Copiar');cp.type='button';
+  cp.addEventListener('click',function(){
+    var text=r.c.split('\n').filter(function(l){return l.charAt(0)!=='#'}).join('\n');
+    function ok(){cp.textContent='Copiado';setTimeout(function(){cp.textContent='Copiar'},1600)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(ok,function(){fallback(text,ok)})}else fallback(text,ok);
+  });
+  box.appendChild(pre);box.appendChild(cp);rp.appendChild(box);
+});
+function fallback(text,ok){
+  var t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';
+  document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(e){}document.body.removeChild(t);
+}
+})();
+</script>
+</body>
+</html>

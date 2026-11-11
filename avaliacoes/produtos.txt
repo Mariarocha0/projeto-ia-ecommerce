@@ -1,0 +1,9 @@
+# Um produto por linha, no formato:   rotulo | URL
+# O rótulo liga o mesmo produto nas duas lojas (vira a coluna produto_ref nos CSVs).
+# Pode colar a URL como veio: o script remove o rastreamento e extrai o ID.
+# Links curtos (a.co, amzn.to, meli.la) também funcionam: o navegador abre e segue o redirecionamento.
+# Linhas começando com # são ignoradas.
+ 
+# iPhone 17 256GB. Confira se cor e armazenamento são os mesmos nas duas lojas.
+iphone17-256 | https://www.mercadolivre.com.br/p/MLB1055308917
+iphone17-256 | https://www.amazon.com.br/dp/B0GQW2J4SK
