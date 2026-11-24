@@ -1,6 +1,17 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+    mermaid.initialize({
+        startOnLoad: true,
+        securityLevel: 'loose',
+        theme: 'default'
+    });
+
+    window.mermaid = mermaid;
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
@@ -13,6 +24,191 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js');</script>
 <style>
+  
+/* ===== FLUXOGRAMA INTERATIVO ===== */
+
+#como-funciona .flow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+}
+
+#como-funciona .steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    position: relative;
+}
+
+#como-funciona .steps::before,
+#como-funciona .steps .fill {
+    display: none;
+}
+
+#como-funciona .step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 150px;
+    padding: 20px 16px;
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    text-align: left;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+#como-funciona .step:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -17px;
+    top: 50%;
+    transform: translate(50%, -50%);
+    color: var(--brand);
+    font-size: 20px;
+    font-weight: bold;
+    z-index: 2;
+}
+
+#como-funciona .step:hover {
+    border-color: var(--brand);
+    transform: translateY(-3px);
+}
+
+#como-funciona .step[aria-selected="true"] {
+    border: 2px solid var(--brand);
+    background: rgba(126, 166, 255, .09);
+}
+
+#como-funciona .step .dot {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: rgba(126, 166, 255, .13);
+    border: 1px solid var(--brand);
+    color: var(--brand);
+    font-weight: 800;
+}
+
+#como-funciona .step b {
+    font-size: 1rem;
+}
+
+#como-funciona .step span.sub {
+    font-size: .82rem;
+    line-height: 1.4;
+}
+
+#como-funciona .step-panel {
+    margin-top: 4px;
+    animation: flowAppear .3s ease;
+}
+
+@keyframes flowAppear {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Trilhas paralelas */
+
+#como-funciona .tracks {
+    margin-top: 34px;
+    display: grid;
+    gap: 18px;
+}
+
+#como-funciona .tracks-intro {
+    color: var(--muted);
+    max-width: 760px;
+}
+
+#como-funciona .track-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+#como-funciona .track-card {
+    padding: 22px;
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+}
+
+#como-funciona .track-card h3 {
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+}
+
+#como-funciona .track-card p {
+    font-size: .92rem;
+    color: var(--muted);
+    margin-bottom: 0;
+}
+
+#como-funciona .track-card .track-tag {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--brand);
+    margin-bottom: 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+#como-funciona .flow-result {
+    text-align: center;
+    padding: 18px;
+    border: 1px solid var(--brand);
+    border-radius: 16px;
+    background: rgba(126, 166, 255, .07);
+}
+
+#como-funciona .flow-result strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+#como-funciona .flow-result span {
+    font-size: .85rem;
+    color: var(--muted);
+}
+
+@media (max-width: 700px) {
+    #como-funciona .steps {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    #como-funciona .step {
+        min-height: 0;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    #como-funciona .step:not(:last-child)::after {
+        content: "↓";
+        right: 50%;
+        top: auto;
+        bottom: -22px;
+        transform: translateX(50%);
+    }
+
+    #como-funciona .track-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
 :root{
   --ink:#0a0f1f; --ink-2:#111a33; --ink-3:#18233f; --line:rgba(160,180,255,.16);
   --text:#e8ecfa; --muted:#a2acce; --brand:#7ea6ff;
@@ -527,7 +723,45 @@ footer a:hover{color:var(--text)}
       <div class="step-panel" id="stepPanel" role="tabpanel" tabindex="0"></div>
     </div>
     <div class="tracks">
-      <p>Duas trilhas correm em paralelo, uma de aspectos e recomendação e outra de satisfação, e só se encontram no relatório final. Os modelos de cada uma são independentes.</p>
+     <p class="tracks-intro">
+        Após a consolidação dos dados, o projeto segue por duas
+        trilhas analíticas independentes, que contribuem para
+        o diagnóstico final.
+    </p>
+
+    <div class="track-grid">
+
+        <article class="track-card">
+            <span class="track-tag">Trilha 1</span>
+            <h3>Aspectos e recomendação</h3>
+            <p>
+                Identificação dos aspectos mencionados nas avaliações
+                (preço, desempenho, bateria e design), análise de
+                sentimentos por aspecto (ABSA), extração de termos
+                relevantes e construção dos perfis dos produtos
+                para recomendação.
+            </p>
+        </article>
+
+        <article class="track-card">
+            <span class="track-tag">Trilha 2</span>
+            <h3>Análise de satisfação</h3>
+            <p>
+                Classificação das avaliações em positivas, neutras
+                ou negativas e agregação dos resultados para
+                identificar o nível de satisfação associado
+                aos produtos.
+            </p>
+        </article>
+
+    </div>
+
+    <div class="flow-result">
+        <strong>Relatório e diagnóstico final</strong>
+        <span>
+            Integração dos resultados, análise comparativa
+            e avaliação do sistema.
+        </span>
     </div>
   </div>
 </section>
