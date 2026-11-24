@@ -1,17 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-
-    mermaid.initialize({
-        startOnLoad: true,
-        securityLevel: 'loose',
-        theme: 'default'
-    });
-
-    window.mermaid = mermaid;
-</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
@@ -586,7 +575,47 @@ footer a:hover{color:var(--text)}
  .sprint-grid article,.team-grid article{padding:13px}
 }
 @media(max-width:390px){.deadline-panel,.team-panel{padding:15px;border-radius:16px}.deadline-top{grid-template-columns:minmax(0,1fr)}.deadline-mark{width:max-content}}
-
+#fluxo .fx-legend{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:.85rem;margin:0 0 18px}
+#fluxo .fx-legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px}
+.fx-done{background:var(--pos)}.fx-doing{background:var(--mix)}.fx-todo{background:transparent;border:1.5px solid var(--neu)}
+#fx{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:auto auto;gap:26px 44px;padding:10px 0 22px}
+#fxLines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+#fxLines path{fill:none;stroke:var(--line);stroke-width:2;transition:stroke .2s}
+#fxLines path.on{stroke:var(--brand)}
+.fx-n{position:relative;z-index:1;align-self:center;display:grid;gap:3px;text-align:left;padding:14px 16px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;transition:border-color .15s,background .15s}
+.fx-n:hover{border-color:rgba(126,166,255,.45)}
+.fx-n[aria-pressed=true]{border-color:var(--brand);background:rgba(126,166,255,.12)}
+.fx-n b{font-size:1rem;padding-right:18px}
+.fx-n small{font-size:.82rem;color:var(--muted);line-height:1.35}
+.fx-n::after{content:"";position:absolute;top:14px;right:14px;width:10px;height:10px;border-radius:50%}
+.fx-n[data-s=done]::after{background:var(--pos)}
+.fx-n[data-s=doing]::after{background:var(--mix)}
+.fx-n[data-s=todo]::after{border:1.5px solid var(--neu)}
+.fx-trk{grid-column:3/5;grid-row:2;align-self:end;justify-self:end;font-size:.78rem;color:var(--muted)}
+.fx-info{background:var(--ink-2);border:1px solid var(--line);border-radius:20px;padding:26px;display:grid;gap:14px}
+.fx-info h3{font-size:1.4rem}
+.fx-info .facts{margin-top:2px}
+.fx-items{display:grid;gap:8px;margin-top:6px}
+.fx-items div{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:12px;background:var(--ink-3);font-size:.95rem}
+.fx-items .period{margin-left:auto;color:var(--brand);font:600 .78rem var(--f-code)}
+.fx-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.fx-grp{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;padding:20px;display:grid;gap:12px;align-content:start}
+.fx-grp h3{font-size:1.1rem}
+.fx-grp>p{font-family:var(--f-ui);font-size:.92rem}
+.fx-grp .to{font-size:.8rem;color:var(--brand);font-weight:600}
+.fx-src{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:2px}
+.fx-src b{font-size:.98rem}
+.fx-src span{font-size:.86rem;color:var(--muted)}
+.fx-prog{display:grid;gap:12px;max-width:900px}
+.fx-bar{height:10px;border-radius:99px;background:var(--ink-3);overflow:hidden}
+.fx-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--pos));transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.fx-prog .next-action{padding:10px 12px;border-left:2px solid var(--pos);border-radius:0 9px 9px 0;background:rgba(79,224,181,.06);font-family:var(--f-ui);font-size:.92rem;color:var(--text);max-width:none}
+@media (max-width:820px){
+  #fx{grid-template-columns:minmax(0,1fr);grid-template-rows:none;gap:30px}
+  #fx .fx-n{grid-column:1!important;grid-row:auto!important}
+  .fx-trk{display:none}
+  .fx-map{grid-template-columns:minmax(0,1fr)}
+}
 </style>
 </head>
 <body>
@@ -602,6 +631,7 @@ footer a:hover{color:var(--text)}
     <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
     <nav class="nav" id="nav" aria-label="Navegação principal">
       <a href="#como-funciona">Como funciona</a>
+      <a href="#fluxo">Fluxograma</a>
       <a href="#andamento">Próximos passos</a>
       <a href="#conceitos">Conceitos</a>
       <a href="#rodar">Rodar o projeto</a>
@@ -697,6 +727,35 @@ footer a:hover{color:var(--text)}
     </div>
   </div>
 </section>
+<section class="sec" id="fluxo">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Fluxograma interativo</h2>
+      <p>Do dado bruto ao diagnóstico. Clique em uma etapa para ver o que entra, o que sai e como medimos. As cores seguem o plano de entrega abaixo.</p>
+    </div>
+    <div class="fx-legend" aria-hidden="true">
+      <span><i class="fx-done"></i>Concluído</span><span><i class="fx-doing"></i>Em andamento</span><span><i class="fx-todo"></i>A fazer</span>
+    </div>
+    <div id="fx" role="group" aria-label="Fluxograma do projeto">
+      <svg id="fxLines" aria-hidden="true"></svg>
+      <span class="fx-trk">Trilha 1: E2 e E4 · Trilha 2: E3</span>
+    </div>
+    <section class="fx-info" id="fxInfo" aria-live="polite"></section>
+
+    <div class="sec-head" style="margin-top:88px">
+      <h2>Mapa das fontes de dados</h2>
+      <p>De onde vêm os textos, e para qual etapa cada fonte segue.</p>
+    </div>
+    <div class="fx-map" id="fxMap"></div>
+
+    <div class="sec-head" style="margin-top:88px">
+      <h2>Avanço da etapa 1</h2>
+      <p>Coleta, validação e casamento de produtos. O painel lê o mesmo plano de entrega da seção seguinte.</p>
+    </div>
+    <div class="fx-prog" id="fxProg"></div>
+  </div>
+</section>
+
 
 <!-- ANDAMENTO -->
 <section class="sec" id="andamento">
@@ -1188,6 +1247,111 @@ function fallback(text,ok){
   var t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';
   document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(e){}document.body.removeChild(t);
 }
+
+
+function grpStatus(g){
+  var it=ROADMAP.filter(function(r){return r.g===g});
+  if(!it.length)return 'todo';
+  if(it.every(function(r){return r.s==='done'}))return 'done';
+  return it.some(function(r){return r.s!=='todo'})?'doing':'todo';
+}
+var FXN=[
+  {id:'fontes',t:'Fontes de dados',sub:'Amazon e Mercado Livre',s:'done',c:'1',r:'1 / 3'},
+  {id:'E1',t:'E1 · Ingestão e casamento',sub:'Coleta, validação e casamento',s:grpStatus('E1'),c:'2',r:'1 / 3'},
+  {id:'E2',t:'E2 · Aspectos e termos',sub:'ABSA e TF-IDF',s:grpStatus('E2'),c:'3',r:'1'},
+  {id:'E3',t:'E3 · Satisfação',sub:'Agregação por produto',s:grpStatus('E3'),c:'3',r:'2'},
+  {id:'E4',t:'E4 · Ranking',sub:'Perfis e NDCG',s:grpStatus('E4'),c:'4',r:'1'},
+  {id:'rel',t:'Relatório final',sub:'Diagnóstico e avaliação',s:grpStatus('Entrega'),c:'5',r:'1 / 3'}
+];
+var FXE=[['fontes','E1'],['E1','E2'],['E1','E3'],['E2','E4'],['E4','rel'],['E3','rel']];
+var fx=$('#fx'),fxl=$('#fxLines'),fxi=$('#fxInfo'),fxn={},fxCur=null;
+FXN.forEach(function(n){
+  var b=el('button','fx-n');b.type='button';b.setAttribute('data-s',n.s);b.setAttribute('aria-pressed','false');
+  b.style.gridColumn=n.c;b.style.gridRow=n.r;
+  b.appendChild(el('b',null,n.t));b.appendChild(el('small',null,n.sub));
+  b.addEventListener('click',function(){fxPick(n.id)});
+  fx.appendChild(b);fxn[n.id]=b;
+});
+function fxFacts(rows){
+  var dl=el('dl','facts');
+  rows.forEach(function(r){var f=el('div','fact');f.appendChild(el('dt',null,r[0]));f.appendChild(el('dd',null,r[1]));dl.appendChild(f)});
+  return dl;
+}
+function fxPick(id){
+  fxCur=id;
+  Object.keys(fxn).forEach(function(k){fxn[k].setAttribute('aria-pressed',k===id)});
+  var n=FXN.filter(function(x){return x.id===id})[0],st=STAGES.filter(function(s){return s.id===id})[0];
+  var rows;
+  if(st)rows=[['Entrada',st.inp.replace(/<[^>]+>/g,'')],['O que acontece',st.what.replace(/<[^>]+>/g,'')],['Saída',st.out.replace(/<[^>]+>/g,'')],['Como medimos',st.chk]];
+  else if(id==='fontes')rows=[['Entrada','Páginas de produtos da Amazon e do Mercado Livre.'],['Saída','Avaliações brutas: nota, texto e data.'],['Cuidado','Nenhum nome ou perfil é guardado. Ritmo lento, e o coletor para no captcha.'],['Plano B','Olist e B2W-Reviews01, se houver bloqueio ou pouco volume.']];
+  else rows=[['Entrada','Resultados das duas trilhas: aspectos e recomendação (E2, E4) e satisfação (E3).'],['Saída','Artigo no modelo SBC com análise comparativa e avaliação do sistema.'],['Prazo','Entrega em 20/11/2026.'],['Atenção','Resultados exploratórios, com amostra pequena de propósito.']];
+  fxi.textContent='';
+  fxi.appendChild(el('h3',null,n.t));
+  var tag=el('span','badge',SLABEL[n.s]);var w=el('div');w.setAttribute('data-s',n.s);w.appendChild(tag);fxi.appendChild(w);
+  if(st)fxi.appendChild(el('p',null,st.lead));
+  fxi.appendChild(fxFacts(rows));
+  if(id==='E1'||id==='E2'||id==='E3'||id==='E4'){
+    var box=el('div','fx-items');
+    ROADMAP.filter(function(r){return r.g===id}).forEach(function(r){
+      var d=el('div');d.setAttribute('data-s',r.s);
+      d.appendChild(el('span',null,r.t));d.appendChild(el('span','badge',SLABEL[r.s]));d.appendChild(el('span','period',r.period));box.appendChild(d);
+    });
+    fxi.appendChild(box);
+  }
+  fxDraw();
+}
+function fxDraw(){
+  var base=fx.getBoundingClientRect(),vert=getComputedStyle(fx).gridTemplateColumns.split(' ').length===1;
+  fxl.setAttribute('viewBox','0 0 '+base.width+' '+base.height);
+  fxl.innerHTML=FXE.map(function(e){
+    var A=fxn[e[0]].getBoundingClientRect(),B=fxn[e[1]].getBoundingClientRect(),d,m;
+    if(vert){
+      var x1=A.left+A.width/2-base.left,y1=A.bottom-base.top,x2=B.left+B.width/2-base.left,y2=B.top-base.top;m=(y1+y2)/2;
+      d='M'+x1+' '+y1+'C'+x1+' '+m+' '+x2+' '+m+' '+x2+' '+y2;
+    }else{
+      var a1=A.right-base.left,b1=A.top+A.height/2-base.top,a2=B.left-base.left,b2=B.top+B.height/2-base.top;m=(a1+a2)/2;
+      d='M'+a1+' '+b1+'C'+m+' '+b1+' '+m+' '+b2+' '+a2+' '+b2;
+    }
+    return '<path d="'+d+'"'+(fxCur&&(e[0]===fxCur||e[1]===fxCur)?' class="on"':'')+'/>';
+  }).join('');
+}
+window.addEventListener('resize',fxDraw);
+if('ResizeObserver' in window)new ResizeObserver(fxDraw).observe(fx);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fxDraw);
+fxPick('E1');
+
+/* mapa das fontes */
+var FXG=[
+  {t:'Coleta própria',p:'Não achamos dataset público com o mesmo produto nas duas lojas.',to:'Alimenta a E1',s:[['Amazon Brasil','Nota, texto e data. Identificador: ASIN.'],['Mercado Livre','Nota, texto e data. Identificador: MLB.']]},
+  {t:'Plano B',p:'Entra se houver bloqueio (captcha) ou volume insuficiente.',to:'Substitui a coleta na E1',s:[['Olist','Avaliações de e-commerce brasileiro.'],['B2W-Reviews01','Avaliações em português de varejo online.']]},
+  {t:'Satisfação',p:'Decisão em aberto: diálogos ou comentários?',to:'Alimenta a E3',s:[['USS (subconjunto em inglês)','Não é de e-commerce.'],['JDDC','É de e-commerce, mas em chinês.'],['Comentários em português','Alternativa: classificar a satisfação nos próprios comentários coletados.']]}
+];
+var fm=$('#fxMap');
+FXG.forEach(function(g){
+  var c=el('article','fx-grp');c.appendChild(el('h3',null,g.t));c.appendChild(el('p',null,g.p));c.appendChild(el('span','to',g.to));
+  g.s.forEach(function(s){var d=el('div','fx-src');d.appendChild(el('b',null,s[0]));d.appendChild(el('span',null,s[1]));c.appendChild(d)});
+  fm.appendChild(c);
+});
+
+/* avanço da etapa 1 */
+var e1=ROADMAP.filter(function(r){return r.g==='E1'}),
+    e1d=e1.filter(function(r){return r.s==='done'}).length,
+    e1g=e1.filter(function(r){return r.s==='doing'}).length,
+    e1p=Math.round((e1d+e1g*0.5)/e1.length*100),
+    fp=$('#fxProg');
+fp.appendChild(el('p',null,e1p+'% da E1: '+e1d+' de '+e1.length+' itens concluídos, '+e1g+' em andamento.'));
+var bar1=el('div','fx-bar'),fill1=el('i');bar1.appendChild(fill1);
+bar1.setAttribute('role','progressbar');bar1.setAttribute('aria-valuemin','0');bar1.setAttribute('aria-valuemax','100');bar1.setAttribute('aria-valuenow',e1p);
+fp.appendChild(bar1);
+e1.forEach(function(r){
+  var li=el('details','card');li.setAttribute('data-s',r.s);
+  var sm=el('summary');sm.appendChild(el('span','item-title',r.t));sm.appendChild(el('span','badge',SLABEL[r.s]));sm.appendChild(el('span','period',r.period));
+  var b=el('div','body');b.appendChild(el('p',null,r.d));b.appendChild(el('p','next-action','Próxima ação: '+r.next));
+  li.appendChild(sm);li.appendChild(b);fp.appendChild(li);
+});
+setTimeout(function(){fill1.style.width=e1p+'%'},200);
+
+  
 })();
 </script>
 </body>
