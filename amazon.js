@@ -1,5 +1,3 @@
-
-
 (async () => {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const CARD = '[data-hook="review"]';
@@ -8,7 +6,33 @@
     return console.warn('⚠️ Nenhuma avaliação neste contexto. Abra a lista de avaliações (ou a modal) primeiro. Se for um iframe, selecione o contexto dele no seletor do topo do Console (onde aparece "top").');
   }
 
-  // 1) Rola o container até carregar tudo (modal / lista com carregamento dinâmico)
+  // 0) Produto
+  const getProduto = () => {
+    const docs = [document];
+    try { if (window.parent && window.parent.document !== document) docs.push(window.parent.document); } catch (e) {}
+    try { if (window.top && window.top.document !== document) docs.push(window.top.document); } catch (e) {}
+
+    for (const d of docs) {
+      // página /product-reviews/...
+      const link = d.querySelector('[data-hook="product-link"]')?.textContent.trim();
+      if (link) return link;
+      // página do produto
+      const title = d.querySelector('#productTitle')?.textContent.trim();
+      if (title) return title;
+      const og = d.querySelector('meta[property="og:title"]')?.content?.trim();
+      if (og) return og;
+    }
+    // fallback: <title> ("Amazon.com.br: Avaliações de clientes: Nome do produto")
+    return document.title
+      .replace(/^Amazon\.[a-z.]+\s*:\s*/i, '')
+      .replace(/^(Avaliações de clientes|Customer reviews)\s*:\s*/i, '')
+      .trim() || null;
+  };
+  const produto = getProduto();
+  if (!produto) console.warn('⚠️ Não foi possível identificar o produto.');
+  console.log('🛒 Produto:', produto);
+
+  // 1) Rola o container até carregar tudo
   let scroller = document.querySelector(CARD).parentElement;
   while (scroller && scroller.scrollHeight <= scroller.clientHeight) scroller = scroller.parentElement;
   scroller = scroller || document.scrollingElement;
@@ -27,13 +51,11 @@
     const ratingEl =
       card.querySelector('[data-hook="review-star-rating"], [data-hook="cmps-review-star-rating"]') || card;
 
-    // A) texto oculto "5,0 de 5 estrelas" (textContent funciona mesmo com o texto escondido)
     const txt = (ratingEl.querySelector('.a-icon-alt')?.textContent || ratingEl.textContent || '')
       .replace(/\u00a0/g, ' ');
     const m = txt.match(/(\d+(?:[.,]\d+)?)\s*de\s*5/i);
     if (m) return Number(m[1].replace(',', '.'));
 
-    // B) classe da estrela: a-star-5, a-star-4-5 etc.
     const cls = ratingEl.querySelector('[class*="a-star-"]')?.className || ratingEl.className || '';
     const m2 = cls.match(/a-star-(?:small-)?(\d)(?:-(\d))?/);
     if (m2) return Number(m2[2] ? `${m2[1]}.${m2[2]}` : m2[1]);
@@ -75,7 +97,8 @@
     if (nota === null) semNota.push(i);
     reviews.push({
       fonte: 'Amazon',
-      stars: nota,          // número, ou null se realmente não achou
+      produto,
+      stars: nota,
       review_text: texto,
     });
   });
@@ -87,8 +110,10 @@
   }
 
   // 5) Download
+  const slug = (produto || 'produto').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 50);
   const a = document.createElement('a');
-  a.download = 'reviews_amazon.json';
+  a.download = `reviews_amazon_${slug}.json`;
   a.href = URL.createObjectURL(new Blob([JSON.stringify(reviews, null, 2)], { type: 'application/json' }));
   a.click();
 })();
